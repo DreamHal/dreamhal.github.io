@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>DreamHal – Islamic Dream Interpreter</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f2fefc;
+      margin: 0;
+      padding: 0;
+      text-align: center;
+    }
+
+    header {
+      background: #00695c;
+      color: white;
+      padding: 30px 20px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    header h1 {
+      font-size: 2.5em;
+      margin-bottom: 5px;
+    }
+
+    #dreamInput {
+      width: 80%;
+      max-width: 600px;
+      padding: 15px;
+      margin-top: 30px;
+      font-size: 1em;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+
+    button {
+      margin: 10px 5px;
+      padding: 10px 20px;
+      font-size: 1em;
+      border: none;
+      border-radius: 5px;
+      background: #004d40;
+      color: white;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    button:hover {
+      background: #00796b;
+    }
+
+    #output {
+      margin: 30px auto;
+      padding: 20px;
+      width: 90%;
+      max-width: 700px;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+      text-align: left;
+    }
+
+    #output h2 {
+      color: #00695c;
+    }
+
+    footer {
+      margin-top: 40px;
+      padding: 15px;
+      font-size: 0.9em;
+      background: #e0f2f1;
+    }
+
+    footer a {
+      color: #004d40;
+      text-decoration: none;
+    }
+
+    footer a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>🌙 DreamHal</h1>
+    <p>Interpret your Islamic dreams by voice or text</p>
+  </header>
+
+  <main>
+    <textarea id="dreamInput" rows="4" placeholder="Type your dream here..."></textarea><br>
+    <button onclick="interpretDream()">Interpret</button>
+    <button onclick="startVoice()">🎙️ Speak</button>
+
+    <div id="output"></div>
+  </main>
+
+  <footer>
+    Developed with ♥️ by Saqib Sarwar ·
+    <a href="https://www.instagram.com/technosaqib_/" target="_blank">Instagram</a> ·
+    <a href="https://www.linkedin.com/in/saqibsarwar1280/" target="_blank">LinkedIn</a>
+  </footer>
+
+  <script>
+    let dreamData = [];
+
+    // Load your live dream database
+    fetch("https://dreamhal.github.io/data.js")
+      .then(res => res.text())
+      .then(text => {
+        const dataStr = text.replace(/^const\s+dreamData\s+=\s+/, "").replace(/;$/, "");
+        dreamData = JSON.parse(dataStr);
+      })
+      .catch(err => {
+        document.getElementById("output").innerHTML = "<p style='color:red;'>⚠️ Failed to load dream data.</p>";
+        console.error(err);
+      });
+
+    function interpretDream() {
+      const input = document.getElementById("dreamInput").value.toLowerCase();
+      let result = "";
+      let found = false;
+
+      dreamData.forEach(entry => {
+        if (input.includes(entry.keyword.toLowerCase())) {
+          result += `
+            <div>
+              <h2>${entry.keyword}</h2>
+              <p><strong>Meaning:</strong> ${entry.interpretation}</p>
+              <p><strong>Advice:</strong> ${entry.advice}</p>
+              <p><em>Source: ${entry.source}</em></p>
+              <hr>
+            </div>
+          `;
+          found = true;
+        }
+      });
+
+      if (!found) {
+        result = "<p>❌ No interpretation found. Try different words like snake, water, etc.</p>";
+      }
+
+      document.getElementById("output").innerHTML = result;
+    }
+
+    function startVoice() {
+      const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+      recognition.lang = 'en-US';
+      recognition.start();
+      recognition.onresult = function (event) {
+        document.getElementById("dreamInput").value = event.results[0][0].transcript;
+      };
+    }
+  </script>
+
+</body>
+</html>
